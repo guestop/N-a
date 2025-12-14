@@ -1,0 +1,27 @@
+{
+  "name": "chat-app",
+  "private": true,
+  "packageManager": "pnpm@9.15.2",
+  "scripts": {
+    "dev": "concurrently -n server,web -c magenta,cyan \"pnpm --filter @chat/server dev\" \"pnpm --filter @chat/web dev\"",
+    "dev:server": "pnpm --filter @chat/server dev",
+    "dev:web": "pnpm --filter @chat/web dev",
+    "build": "pnpm --filter @chat/server build && pnpm --filter @chat/web build",
+    "lint": "eslint . --max-warnings=0 && prettier --check .",
+    "format": "prettier --write .",
+    "test": "pnpm --filter @chat/server test && pnpm --filter @chat/web test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "concurrently": "^9.1.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0",
+    "vitest": "^2.1.8"
+  }
+}
