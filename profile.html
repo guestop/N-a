@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Profile - Universal Apps</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+  <nav>
+    <a href="/" class="brand">Universal Apps</a>
+    <div class="links"><a href="/browse.html">Browse</a></div>
+    <div id="auth-section"></div>
+  </nav>
+
+  <main class="container">
+    <div id="profile-header" style="text-align: center; margin-bottom: 3rem; padding: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;">
+      <div class="loader"></div>
+    </div>
+
+    <h2>Published Apps</h2>
+    <div id="profile-grid" class="grid" style="margin-top: 1.5rem;">
+      <div class="loader"></div>
+    </div>
+  </main>
+
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      Auth.init();
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get('id');
+      
+      if (!userId) {
+        document.getElementById('profile-header').innerHTML = '<h2>User not found</h2>';
+        document.getElementById('profile-grid').innerHTML = '';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/users?id=${userId}`);
+        if (!res.ok) throw new Error('User not found');
+        const user = await res.json();
+        
+        document.getElementById('profile-header').innerHTML = `
+          <img src="${escapeHTML(user.avatar)}" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 1rem;">
+          <h1>${escapeHTML(user.username)}</h1>
+          <p class="text-muted">${escapeHTML(user.bio || 'No bio provided.')}</p>
+          <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">Joined ${new Date(user.created_at).toLocaleDateString()}</p>
+        `;
+
+        const apps = await API.fetchApps({ publisher: user.id });
+        renderGrid('profile-grid', apps);
+      } catch (e) {
+        document.getElementById('profile-header').innerHTML = '<h2>User not found</h2>';
+        document.getElementById('profile-grid').innerHTML = '';
+      }
+    });
+  </script>
+</body>
+</html>

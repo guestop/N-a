@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Publisher Dashboard - Universal Apps</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+  <nav>
+    <a href="/" class="brand">Universal Apps</a>
+    <div class="links"><a href="/browse.html">Browse</a></div>
+    <div id="auth-section"></div>
+  </nav>
+
+  <main class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h1>Your Dashboard</h1>
+      <a href="/publish.html" class="btn">+ New App</a>
+    </div>
+
+    <div id="dashboard-grid" class="grid">
+      <div class="loader"></div>
+    </div>
+  </main>
+
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.init();
+      if (!user) {
+        window.location.href = '/?error=login_required';
+        return;
+      }
+      
+      const apps = await API.fetchApps({ publisher: user.id });
+      renderGrid('dashboard-grid', apps);
+    });
+  </script>
+</body>
+</html>

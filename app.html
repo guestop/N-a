@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View App - Universal Apps</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <style>
+    body, html { height: 100%; margin: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .viewer-header { 
+      padding: 0.75rem 1.5rem; 
+      background: var(--surface); 
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .viewer-title { margin: 0; font-size: 1.25rem; font-weight: 600; }
+    .viewer-meta { font-size: 0.875rem; color: var(--text-muted); }
+    #iframe-wrapper { flex: 1; background: #000; position: relative; }
+    .viewer-actions { display: flex; gap: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="viewer-header">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <a href="/" style="text-decoration: none; font-weight: bold; color: var(--primary);">&larr; Back</a>
+      <div>
+        <h1 id="app-title" class="viewer-title">Loading...</h1>
+        <div class="viewer-meta">
+          <span id="app-publisher">Published by ...</span> &bull; 
+          <span id="app-views">0 views</span>
+        </div>
+      </div>
+    </div>
+    <div class="viewer-actions">
+      <button onclick="toggleFullscreen()" class="btn" style="background: var(--surface); color: var(--text-main) !important; border: 1px solid var(--border);">Fullscreen</button>
+      <button onclick="document.querySelector('iframe').src = document.querySelector('iframe').src" class="btn">Reload</button>
+    </div>
+  </div>
+
+  <div id="viewer-container" style="flex: 1; display: flex; flex-direction: column;">
+    <div id="iframe-wrapper">
+      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="loader"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/viewer.js"></script>
+</body>
+</html>

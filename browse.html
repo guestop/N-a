@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Apps - Universal Apps</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+  <nav>
+    <a href="/" class="brand">Universal Apps</a>
+    <div class="links">
+      <a href="/browse.html">Browse</a>
+    </div>
+    <div id="auth-section"></div>
+  </nav>
+
+  <main class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h1>Browse All Apps</h1>
+      <div style="display: flex; gap: 1rem;">
+        <select id="filter-category" class="form-group" style="margin: 0; width: auto;" onchange="loadApps()">
+          <option value="All">All Categories</option>
+          <option value="Games">Games</option>
+          <option value="AI">AI/ML</option>
+          <option value="Tools">Tools</option>
+          <option value="Experiments">Experiments</option>
+        </select>
+        <select id="sort-by" class="form-group" style="margin: 0; width: auto;" onchange="loadApps()">
+          <option value="newest">Newest</option>
+          <option value="most_viewed">Most Viewed</option>
+          <option value="most_liked">Most Liked</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="browse-grid" class="grid">
+      <div class="loader"></div>
+    </div>
+  </main>
+
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script>
+    async function loadApps() {
+      const grid = document.getElementById('browse-grid');
+      grid.innerHTML = '<div class="loader"></div>';
+      
+      const category = document.getElementById('filter-category').value;
+      const sort = document.getElementById('sort-by').value;
+      
+      const apps = await API.fetchApps({ category, sort });
+      renderGrid('browse-grid', apps);
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadApps);
+  </script>
+</body>
+</html>

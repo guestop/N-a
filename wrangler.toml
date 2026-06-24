@@ -1,0 +1,8 @@
+name = "universal-apps"
+compatibility_date = "2026-06-22"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "marketplace_d1"
+database_name = "marketplace-d1"
+database_id = "a1de1209-9280-4834-bf16-20984860bea3"
