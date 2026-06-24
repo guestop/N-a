@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universal Web App Marketplace</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+  <nav>
+    <a href="/" class="brand">Universal Apps</a>
+    <div class="links">
+      <a href="/browse.html">Browse</a>
+    </div>
+    <div id="auth-section">
+      <!-- Injected by auth.js -->
+    </div>
+  </nav>
+
+  <main class="container">
+    <section style="text-align: center; margin-bottom: 3rem;">
+      <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Run Any App. Instantly.</h1>
+      <p style="color: var(--text-muted); font-size: 1.125rem;">Zero downloads. Zero cost. Directly in your browser.</p>
+    </section>
+
+    <section>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2>Top Apps</h2>
+        <a href="/browse.html">View all &rarr;</a>
+      </div>
+      <div id="featured-apps" class="grid">
+        <div class="loader"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const apps = await API.fetchApps({ sort: 'most_viewed', limit: 8 });
+      renderGrid('featured-apps', apps);
+    });
+  </script>
+</body>
+</html>
