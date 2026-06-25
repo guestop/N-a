@@ -3,53 +3,164 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>View App - Universal Apps</title>
+  <title>Viewer | Universal Apps</title>
   <link rel="stylesheet" href="/assets/css/main.css">
   <style>
-    body, html { height: 100%; margin: 0; display: flex; flex-direction: column; overflow: hidden; }
-    .viewer-header { 
-      padding: 0.75rem 1.5rem; 
-      background: var(--surface); 
+    body { overflow: hidden; } /* Disable body scroll on app viewer */
+    .viewer-layout {
+      display: flex;
+      height: calc(100vh - 56px); /* minus navbar */
+      margin-top: 56px;
+    }
+    
+    .viewer-main {
+      flex: 1;
+      background: #000;
+      position: relative;
+    }
+
+    .viewer-sidebar {
+      width: 320px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+    }
+
+    .app-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .viewer-topbar {
+      height: 64px;
+      background: var(--bg-primary);
       border-bottom: 1px solid var(--border);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      flex-shrink: 0;
+      padding: 0 24px;
+      gap: 16px;
     }
-    .viewer-title { margin: 0; font-size: 1.25rem; font-weight: 600; }
-    .viewer-meta { font-size: 0.875rem; color: var(--text-muted); }
-    #iframe-wrapper { flex: 1; background: #000; position: relative; }
-    .viewer-actions { display: flex; gap: 0.5rem; }
+
+    .sidebar-content {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .stat-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 8px;}
+    
+    .icon-btn {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .icon-btn:hover { background: var(--text-primary); color: var(--bg-primary); }
+
+    @media (max-width: 768px) {
+      .viewer-layout { flex-direction: column; }
+      .viewer-sidebar { width: 100%; height: 300px; border-left: none; border-top: 1px solid var(--border); }
+    }
   </style>
 </head>
 <body>
-  <div class="viewer-header">
-    <div style="display: flex; align-items: center; gap: 1rem;">
-      <a href="/" style="text-decoration: none; font-weight: bold; color: var(--primary);">&larr; Back</a>
-      <div>
-        <h1 id="app-title" class="viewer-title">Loading...</h1>
-        <div class="viewer-meta">
-          <span id="app-publisher">Published by ...</span> &bull; 
-          <span id="app-views">0 views</span>
+
+  <nav class="navbar" style="position: fixed; top: 0; width: 100%;">
+    <a href="/" class="nav-brand">⚡ Universal Apps</a>
+    <div class="nav-right" id="nav-auth"></div>
+  </nav>
+
+  <div class="viewer-layout fade-in">
+    <!-- iFrame Area -->
+    <div class="viewer-main">
+      <div class="viewer-topbar">
+        <a href="javascript:history.back()" class="btn btn-ghost" style="padding: 6px 12px; font-size: 13px;">&larr; Back</a>
+        <div style="flex: 1;">
+          <h1 id="top-title" style="font-size: 16px; font-weight: 600;">Loading...</h1>
+          <div id="top-pub" style="font-size: 12px; color: var(--text-secondary);">publisher</div>
         </div>
+        <button class="icon-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
       </div>
+      <iframe id="app-frame" class="app-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-modals" allowfullscreen></iframe>
     </div>
-    <div class="viewer-actions">
-      <button onclick="toggleFullscreen()" class="btn" style="background: var(--surface); color: var(--text-main) !important; border: 1px solid var(--border);">Fullscreen</button>
-      <button onclick="document.querySelector('iframe').src = document.querySelector('iframe').src" class="btn">Reload</button>
-    </div>
+
+    <!-- Details Sidebar -->
+    <aside class="viewer-sidebar">
+      <div class="sidebar-content">
+        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
+          <img id="side-icon" src="https://via.placeholder.com/64" style="width: 64px; height: 64px; border-radius: var(--radius-md);">
+          <div>
+            <h2 id="side-title" style="font-size: 18px; font-weight: 700;">Loading</h2>
+            <span id="side-cat" class="category-pill">App</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+          <button class="btn btn-primary" style="flex: 1;" onclick="API.toggleLike('app_id')">♥ Like</button>
+          <button class="btn btn-ghost" style="flex: 1;" onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied!')">Share</button>
+        </div>
+
+        <p id="side-desc" style="font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; line-height: 1.6;">...</p>
+
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); margin-bottom: 12px;">Statistics</h3>
+        <div class="stat-row"><span>Views</span> <strong id="stat-views" style="color: var(--text-primary);">0</strong></div>
+        <div class="stat-row"><span>Likes</span> <strong id="stat-likes" style="color: var(--text-primary);">0</strong></div>
+        <div class="stat-row"><span>Published</span> <strong id="stat-date" style="color: var(--text-primary);">-</strong></div>
+      </div>
+    </aside>
   </div>
 
-  <div id="viewer-container" style="flex: 1; display: flex; flex-direction: column;">
-    <div id="iframe-wrapper">
-      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-        <div class="loader"></div>
-      </div>
-    </div>
-  </div>
-
+  <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/app.js"></script>
-  <script src="/assets/js/viewer.js"></script>
+  <script>
+    async function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+      if (!id) return;
+
+      const app = await API.fetchApp(id);
+      if (!app) {
+        document.getElementById('top-title').textContent = "App Not Found";
+        return;
+      }
+
+      // Populate UI
+      document.title = `${app.title} | Universal Apps`;
+      document.getElementById('top-title').textContent = app.title;
+      document.getElementById('top-pub').textContent = `by ${app.publisher_name}`;
+      
+      document.getElementById('side-icon').src = app.thumbnail || 'https://via.placeholder.com/64/111/fff?text=U';
+      document.getElementById('side-title').textContent = app.title;
+      document.getElementById('side-cat').textContent = app.category || 'App';
+      document.getElementById('side-desc').textContent = app.description || 'No description available.';
+      
+      document.getElementById('stat-views').textContent = app.views;
+      document.getElementById('stat-likes').textContent = app.likes;
+      document.getElementById('stat-date').textContent = new Date(app.created_at).toLocaleDateString();
+
+      // Set iframe
+      document.getElementById('app-frame').src = app.app_url;
+      
+      // Increment view via API (simulate)
+      API.incrementView(id);
+    }
+
+    function toggleFullscreen() {
+      const frame = document.getElementById('app-frame');
+      if (!document.fullscreenElement) {
+        frame.requestFullscreen().catch(err => console.error(err));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
 </body>
 </html>

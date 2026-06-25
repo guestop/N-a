@@ -3,92 +3,166 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Publish App - Universal Apps</title>
+  <title>Publish | Universal Apps</title>
   <link rel="stylesheet" href="/assets/css/main.css">
+  <style>
+    .publish-container { max-width: 700px; margin: 0 auto; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px; }
+    .form-group { margin-bottom: 24px; }
+    .form-label { display: block; font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
+    .form-input { width: 100%; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px 16px; border-radius: var(--radius-sm); font-family: inherit; font-size: 15px; transition: border-color 0.2s; outline: none; }
+    .form-input:focus { border-color: var(--text-secondary); }
+    textarea.form-input { resize: vertical; min-height: 100px; }
+    
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+    .tab { background: transparent; border: 1px solid transparent; color: var(--text-secondary); padding: 8px 16px; cursor: pointer; border-radius: var(--radius-sm); font-weight: 500; transition: all 0.2s; }
+    .tab:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+    .tab.active { background: var(--bg-tertiary); color: var(--text-primary); border-color: var(--border); }
+    .tab-content { display: none; animation: fadeIn 0.3s ease forwards; }
+    .tab-content.active { display: block; }
+  </style>
 </head>
 <body>
-  <nav>
-    <a href="/" class="brand">Universal Apps</a>
-    <div class="links"><a href="/browse.html">Browse</a></div>
-    <div id="auth-section"></div>
+
+  <nav class="navbar">
+    <a href="/" class="nav-brand">⚡ Universal Apps</a>
+    <div class="nav-right" id="nav-auth"></div>
   </nav>
 
-  <main class="container" style="max-width: 600px;">
-    <h1>Publish Your App</h1>
-    <p class="text-muted" style="margin-bottom: 2rem;">Host your code anywhere (GitHub Pages, Vercel, etc.) and paste the URL here. Zero storage costs.</p>
+  <main class="container fade-in">
+    <div class="publish-container">
+      <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">Publish App</h1>
+      <p style="color: var(--text-secondary); margin-bottom: 40px;">Launch your creation to a global audience with zero infrastructure costs.</p>
 
-    <div id="publish-error" class="hidden" style="background: #fee2e2; color: #b91c1c; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1rem;"></div>
-    
-    <form id="publish-form">
-      <div class="form-group">
-        <label for="title">App Title *</label>
-        <input type="text" id="title" required placeholder="My Awesome Game">
-      </div>
-      
-      <div class="form-group">
-        <label for="app_url">App URL * (Must be HTTPS)</label>
-        <input type="url" id="app_url" required placeholder="https://username.github.io/repo/">
-      </div>
-      
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea id="description" rows="4" placeholder="What does this app do?"></textarea>
-      </div>
+      <form id="publish-form">
+        <div class="form-group">
+          <label class="form-label">App Name</label>
+          <input type="text" id="title" class="form-input" required placeholder="e.g. Pixel Editor">
+        </div>
 
-      <div class="form-group">
-        <label for="category">Category</label>
-        <select id="category">
-          <option value="Games">Games</option>
-          <option value="AI">AI/ML</option>
-          <option value="Tools">Tools</option>
-          <option value="Experiments" selected>Experiments</option>
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label for="thumbnail">Thumbnail Image URL</label>
-        <input type="url" id="thumbnail" placeholder="https://example.com/image.png">
-      </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="desc" class="form-input" required placeholder="Briefly describe what your app does..."></textarea>
+        </div>
 
-      <button type="submit" class="btn" style="width: 100%; padding: 0.75rem;">Publish App to Global Edge</button>
-    </form>
+        <div style="display: flex; gap: 24px; margin-bottom: 24px;">
+          <div style="flex: 1;">
+            <label class="form-label">Category</label>
+            <select id="category" class="form-input">
+              <option value="Games">Games</option>
+              <option value="AI">AI Tools</option>
+              <option value="Creative">Creative</option>
+              <option value="Productivity">Productivity</option>
+              <option value="Music">Music</option>
+              <option value="Dev">Developer Tools</option>
+              <option value="Education">Education</option>
+              <option value="Utilities">Utilities</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label class="form-label">Tags (comma separated)</label>
+            <input type="text" id="tags" class="form-input" placeholder="react, editor, image">
+          </div>
+        </div>
+
+        <label class="form-label">Hosting Method</label>
+        <div class="tabs">
+          <button type="button" class="tab active" onclick="switchTab('github', this)">GitHub URL</button>
+          <button type="button" class="tab" onclick="switchTab('direct', this)">Direct URL</button>
+          <button type="button" class="tab" onclick="switchTab('zip', this)">ZIP Upload</button>
+        </div>
+
+        <div id="tab-github" class="tab-content active form-group">
+          <input type="url" id="url-github" class="form-input" placeholder="https://username.github.io/repo/">
+          <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 8px;">We will directly embed your GitHub Pages URL.</p>
+        </div>
+
+        <div id="tab-direct" class="tab-content form-group">
+          <input type="url" id="url-direct" class="form-input" placeholder="https://my-app.vercel.app">
+          <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 8px;">Must support iframe embedding (no X-Frame-Options DENY).</p>
+        </div>
+
+        <div id="tab-zip" class="tab-content form-group">
+          <div style="border: 2px dashed var(--border); padding: 40px; text-align: center; border-radius: var(--radius-sm); background: var(--bg-primary);">
+            <p style="color: var(--text-secondary); margin-bottom: 12px;">Drag & drop your .zip file containing index.html</p>
+            <input type="file" id="zip-file" accept=".zip" style="display: none;">
+            <button type="button" class="btn btn-ghost" onclick="document.getElementById('zip-file').click()">Select ZIP File</button>
+            <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 12px;">Max 50MB. (Feature coming soon via Workers Storage)</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Thumbnail URL</label>
+          <input type="url" id="thumbnail" class="form-input" placeholder="https://example.com/thumb.png">
+        </div>
+
+        <div id="error-msg" style="color: var(--error); margin-bottom: 24px; font-size: 14px; display: none;"></div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px;">Publish App</button>
+      </form>
+    </div>
   </main>
 
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/api.js"></script>
   <script>
+    let activeMethod = 'github';
+
+    function switchTab(id, el) {
+      activeMethod = id;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('tab-' + id).classList.add('active');
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       const user = await Auth.init();
       if (!user) {
         window.location.href = '/?error=login_required';
         return;
       }
-      
+
       document.getElementById('publish-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = e.target.querySelector('button');
-        const errBox = document.getElementById('publish-error');
-        
-        btn.disabled = true;
-        btn.innerHTML = '<div class="loader" style="width:1rem;height:1rem;"></div> Publishing...';
-        errBox.classList.add('hidden');
-        
+        const err = document.getElementById('error-msg');
+        err.style.display = 'none';
+
+        let appUrl = '';
+        if (activeMethod === 'github') appUrl = document.getElementById('url-github').value;
+        if (activeMethod === 'direct') appUrl = document.getElementById('url-direct').value;
+        if (activeMethod === 'zip') {
+          err.textContent = 'ZIP upload requires Cloudflare R2 binding. Please use GitHub URL for now.';
+          err.style.display = 'block';
+          return;
+        }
+
+        if (!appUrl) {
+          err.textContent = 'Please provide a valid URL.';
+          err.style.display = 'block';
+          return;
+        }
+
         try {
-          const appData = {
+          const btn = e.target.querySelector('button[type="submit"]');
+          btn.textContent = 'Publishing...';
+          btn.disabled = true;
+
+          const res = await API.publishApp({
             title: document.getElementById('title').value,
-            app_url: document.getElementById('app_url').value,
-            description: document.getElementById('description').value,
+            description: document.getElementById('desc').value,
             category: document.getElementById('category').value,
-            thumbnail: document.getElementById('thumbnail').value,
-          };
-          
-          const res = await API.publishApp(appData);
+            tags: document.getElementById('tags').value,
+            app_url: appUrl,
+            thumbnail: document.getElementById('thumbnail').value
+          });
+
           window.location.href = `/app.html?id=${res.id}`;
-        } catch (err) {
-          errBox.textContent = err.message;
-          errBox.classList.remove('hidden');
-          btn.disabled = false;
-          btn.textContent = 'Publish App to Global Edge';
+        } catch (error) {
+          err.textContent = error.message;
+          err.style.display = 'block';
+          e.target.querySelector('button[type="submit"]').textContent = 'Publish App';
+          e.target.querySelector('button[type="submit"]').disabled = false;
         }
       });
     });

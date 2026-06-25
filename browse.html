@@ -3,39 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Browse Apps - Universal Apps</title>
+  <title>Browse | Universal Apps</title>
   <link rel="stylesheet" href="/assets/css/main.css">
+  <style>
+    .browse-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 40px;
+      margin-top: 40px;
+    }
+    .sidebar {
+      position: sticky;
+      top: 100px;
+      height: calc(100vh - 100px);
+      overflow-y: auto;
+    }
+    .filter-group { margin-bottom: 32px; }
+    .filter-title { font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .filter-list { list-style: none; }
+    .filter-list li { margin-bottom: 8px; }
+    .filter-list a { color: var(--text-primary); text-decoration: none; font-size: 15px; opacity: 0.8; transition: opacity 0.2s; display: block; padding: 6px 12px; border-radius: var(--radius-sm); }
+    .filter-list a:hover { opacity: 1; background: var(--bg-tertiary); }
+    .filter-list a.active { background: var(--bg-tertiary); font-weight: 600; opacity: 1; color: var(--accent); }
+    
+    .browse-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .select-dropdown { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 16px; border-radius: var(--radius-sm); font-family: inherit; outline: none; }
+    
+    @media (max-width: 768px) {
+      .browse-layout { grid-template-columns: 1fr; }
+      .sidebar { position: relative; top: 0; height: auto; }
+    }
+  </style>
 </head>
 <body>
-  <nav>
-    <a href="/" class="brand">Universal Apps</a>
-    <div class="links">
-      <a href="/browse.html">Browse</a>
-    </div>
-    <div id="auth-section"></div>
+
+  <nav class="navbar">
+    <a href="/" class="nav-brand">⚡ Universal Apps</a>
+    <input type="text" class="search-bar" placeholder="Search apps, games, tools...">
+    <div class="nav-right" id="nav-auth"></div>
   </nav>
 
-  <main class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-      <h1>Browse All Apps</h1>
-      <div style="display: flex; gap: 1rem;">
-        <select id="filter-category" class="form-group" style="margin: 0; width: auto;" onchange="loadApps()">
-          <option value="All">All Categories</option>
-          <option value="Games">Games</option>
-          <option value="AI">AI/ML</option>
-          <option value="Tools">Tools</option>
-          <option value="Experiments">Experiments</option>
-        </select>
-        <select id="sort-by" class="form-group" style="margin: 0; width: auto;" onchange="loadApps()">
-          <option value="newest">Newest</option>
-          <option value="most_viewed">Most Viewed</option>
-          <option value="most_liked">Most Liked</option>
-        </select>
-      </div>
-    </div>
+  <main class="container fade-in">
+    <div class="browse-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="filter-group">
+          <div class="filter-title">Categories</div>
+          <ul class="filter-list" id="cat-list">
+            <li><a href="#" class="active" onclick="filterCategory('All', this)">All Categories</a></li>
+            <li><a href="#" onclick="filterCategory('Games', this)">Games</a></li>
+            <li><a href="#" onclick="filterCategory('AI', this)">AI Tools</a></li>
+            <li><a href="#" onclick="filterCategory('Creative', this)">Creative</a></li>
+            <li><a href="#" onclick="filterCategory('Productivity', this)">Productivity</a></li>
+            <li><a href="#" onclick="filterCategory('Music', this)">Music</a></li>
+            <li><a href="#" onclick="filterCategory('Developer Tools', this)">Developer Tools</a></li>
+            <li><a href="#" onclick="filterCategory('Utilities', this)">Utilities</a></li>
+          </ul>
+        </div>
+      </aside>
 
-    <div id="browse-grid" class="grid">
-      <div class="loader"></div>
+      <!-- Main Content -->
+      <div class="browse-content">
+        <div class="browse-top">
+          <h1 style="font-size: 24px; font-weight: 700;">All Apps <span id="results-count" style="color: var(--text-secondary); font-size: 16px; font-weight: 500;">(0)</span></h1>
+          <select class="select-dropdown" id="sort-dropdown" onchange="loadApps()">
+            <option value="newest">Newest First</option>
+            <option value="popular">Most Popular</option>
+            <option value="trending">Trending (7 Days)</option>
+          </select>
+        </div>
+        
+        <div class="card-grid" id="browse-grid">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
     </div>
   </main>
 
@@ -43,15 +84,29 @@
   <script src="/assets/js/api.js"></script>
   <script src="/assets/js/app.js"></script>
   <script>
+    let currentCategory = 'All';
+
+    function filterCategory(cat, el) {
+      document.querySelectorAll('#cat-list a').forEach(a => a.classList.remove('active'));
+      el.classList.add('active');
+      currentCategory = cat;
+      loadApps();
+    }
+
     async function loadApps() {
       const grid = document.getElementById('browse-grid');
-      grid.innerHTML = '<div class="loader"></div>';
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">Loading...</div>';
       
-      const category = document.getElementById('filter-category').value;
-      const sort = document.getElementById('sort-by').value;
+      const sort = document.getElementById('sort-dropdown').value;
+      const apps = await API.fetchApps({ category: currentCategory === 'All' ? '' : currentCategory, sort });
       
-      const apps = await API.fetchApps({ category, sort });
-      renderGrid('browse-grid', apps);
+      if (!apps || apps.length === 0) {
+        document.getElementById('results-count').textContent = `(24 Demos)`;
+        AppRenderer.renderDemos('browse-grid', 24); // Show empty state demos per rule #7
+      } else {
+        document.getElementById('results-count').textContent = `(${apps.length})`;
+        AppRenderer.renderGrid('browse-grid', apps);
+      }
     }
     
     document.addEventListener('DOMContentLoaded', loadApps);

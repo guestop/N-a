@@ -3,24 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Public Profile - Universal Apps</title>
+  <title>User Profile | Universal Apps</title>
   <link rel="stylesheet" href="/assets/css/main.css">
+  <style>
+    .profile-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 60px 24px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 40px;
+    }
+    .profile-avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--bg-primary); margin-bottom: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .profile-name { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    .profile-bio { font-size: 16px; color: var(--text-secondary); max-width: 600px; margin-bottom: 24px; }
+    .profile-meta { font-size: 13px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+  </style>
 </head>
 <body>
-  <nav>
-    <a href="/" class="brand">Universal Apps</a>
-    <div class="links"><a href="/browse.html">Browse</a></div>
-    <div id="auth-section"></div>
+
+  <nav class="navbar">
+    <a href="/" class="nav-brand">⚡ Universal Apps</a>
+    <div class="nav-right" id="nav-auth"></div>
   </nav>
 
-  <main class="container">
-    <div id="profile-header" style="text-align: center; margin-bottom: 3rem; padding: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;">
-      <div class="loader"></div>
+  <main class="container fade-in">
+    <div class="profile-header" id="p-header">
+      <div class="loader" style="width:32px; height:32px;"></div>
     </div>
 
-    <h2>Published Apps</h2>
-    <div id="profile-grid" class="grid" style="margin-top: 1.5rem;">
-      <div class="loader"></div>
+    <h2 class="section-title">Published Portfolio</h2>
+    <div class="card-grid" id="profile-apps">
+      <!-- JS injected -->
     </div>
   </main>
 
@@ -30,32 +47,36 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       Auth.init();
+      
       const urlParams = new URLSearchParams(window.location.search);
       const userId = urlParams.get('id');
       
       if (!userId) {
-        document.getElementById('profile-header').innerHTML = '<h2>User not found</h2>';
-        document.getElementById('profile-grid').innerHTML = '';
+        document.getElementById('p-header').innerHTML = '<h1 class="profile-name">User Not Found</h1>';
         return;
       }
 
       try {
         const res = await fetch(`/api/users?id=${userId}`);
-        if (!res.ok) throw new Error('User not found');
+        if (!res.ok) throw new Error();
         const user = await res.json();
         
-        document.getElementById('profile-header').innerHTML = `
-          <img src="${escapeHTML(user.avatar)}" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 1rem;">
-          <h1>${escapeHTML(user.username)}</h1>
-          <p class="text-muted">${escapeHTML(user.bio || 'No bio provided.')}</p>
-          <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">Joined ${new Date(user.created_at).toLocaleDateString()}</p>
+        document.getElementById('p-header').innerHTML = `
+          <img src="${user.avatar || 'https://github.com/ghost.png'}" class="profile-avatar">
+          <h1 class="profile-name">${AppRenderer.escapeHTML(user.username)}</h1>
+          <p class="profile-bio">${AppRenderer.escapeHTML(user.bio || 'No bio provided.')}</p>
+          <div class="profile-meta">Joined ${new Date(user.created_at).toLocaleDateString()}</div>
         `;
 
         const apps = await API.fetchApps({ publisher: user.id });
-        renderGrid('profile-grid', apps);
+        if (apps.length === 0) {
+           document.getElementById('profile-apps').innerHTML = '<p style="color: var(--text-secondary); text-align:center; grid-column:1/-1;">No apps published yet.</p>';
+        } else {
+           AppRenderer.renderGrid('profile-apps', apps);
+        }
+
       } catch (e) {
-        document.getElementById('profile-header').innerHTML = '<h2>User not found</h2>';
-        document.getElementById('profile-grid').innerHTML = '';
+        document.getElementById('p-header').innerHTML = '<h1 class="profile-name">User Not Found</h1>';
       }
     });
   </script>

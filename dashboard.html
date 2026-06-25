@@ -3,30 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Publisher Dashboard - Universal Apps</title>
+  <title>Dashboard | Universal Apps</title>
   <link rel="stylesheet" href="/assets/css/main.css">
+  <style>
+    .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px; }
+    .stat-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; }
+    .stat-val { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+    .stat-label { font-size: 13px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    .table-wrapper { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 16px 24px; text-align: left; border-bottom: 1px solid var(--bg-tertiary); font-size: 14px; }
+    th { color: var(--text-secondary); font-weight: 500; text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: var(--bg-tertiary); }
+    
+    .action-link { color: var(--accent); text-decoration: none; font-size: 13px; margin-right: 12px; }
+    .action-link:hover { text-decoration: underline; }
+    .text-danger { color: var(--error); }
+  </style>
 </head>
 <body>
-  <nav>
-    <a href="/" class="brand">Universal Apps</a>
-    <div class="links"><a href="/browse.html">Browse</a></div>
-    <div id="auth-section"></div>
+
+  <nav class="navbar">
+    <a href="/" class="nav-brand">⚡ Universal Apps</a>
+    <div class="nav-right" id="nav-auth"></div>
   </nav>
 
-  <main class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-      <h1>Your Dashboard</h1>
-      <a href="/publish.html" class="btn">+ New App</a>
+  <main class="container fade-in">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+      <h1 style="font-size: 32px; font-weight: 700;">Publisher Dashboard</h1>
+      <a href="/publish.html" class="btn btn-primary">+ Quick Publish</a>
     </div>
 
-    <div id="dashboard-grid" class="grid">
-      <div class="loader"></div>
+    <!-- Stats -->
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-val" id="total-apps">0</div>
+        <div class="stat-label">Total Apps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="total-views">0</div>
+        <div class="stat-label">Total Views</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="total-likes">0</div>
+        <div class="stat-label">Total Likes</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 16px;">Your Published Apps</h2>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>App Name</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Views</th>
+            <th>Likes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="apps-tbody">
+          <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">Loading...</td></tr>
+        </tbody>
+      </table>
     </div>
   </main>
 
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/app.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const user = await Auth.init();
@@ -34,9 +82,43 @@
         window.location.href = '/?error=login_required';
         return;
       }
-      
+
+      // We use fetchApps with a publisher constraint. 
+      // The API should handle this in functions/api/apps.js
       const apps = await API.fetchApps({ publisher: user.id });
-      renderGrid('dashboard-grid', apps);
+      
+      let views = 0, likes = 0;
+      const tbody = document.getElementById('apps-tbody');
+      
+      if (!apps || apps.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 40px;">You haven\'t published any apps yet.</td></tr>';
+        return;
+      }
+
+      const rows = apps.map(app => {
+        views += app.views || 0;
+        likes += app.likes || 0;
+        return `
+          <tr>
+            <td style="font-weight: 500; color: var(--text-primary);">
+              <a href="/app.html?id=${app.id}" style="color: inherit; text-decoration: none;">${app.title}</a>
+            </td>
+            <td><span class="category-pill">${app.category || 'App'}</span></td>
+            <td><span style="color: var(--success); font-size: 12px;">● Published</span></td>
+            <td>${app.views}</td>
+            <td>${app.likes}</td>
+            <td>
+              <a href="#" class="action-link">Edit</a>
+              <a href="#" class="action-link text-danger">Delete</a>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('total-apps').textContent = apps.length;
+      document.getElementById('total-views').textContent = views;
+      document.getElementById('total-likes').textContent = likes;
+      tbody.innerHTML = rows.join('');
     });
   </script>
 </body>

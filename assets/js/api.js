@@ -1,4 +1,4 @@
-// /assets/js/api.js
+// assets/js/api.js
 
 const API = {
   async fetchApps(params = {}) {
@@ -26,6 +26,8 @@ const API = {
 
   async publishApp(appData) {
     try {
+      // Must include JWT header if auth is via localStorage, 
+      // but Worker uses HttpOnly cookie for security.
       const res = await fetch(`/api/apps`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -38,5 +40,18 @@ const API = {
       console.error(e);
       throw e;
     }
+  },
+
+  async toggleLike(id) {
+    // POST /api/apps/:id/like
+    // Using placeholder logic since backend isn't deeply rewritten for this route yet
+    console.log('Toggled like for', id);
+    return true;
+  },
+
+  async incrementView(id) {
+    // POST /api/apps/:id/view
+    // We update view via GET single app in the backend currently
+    console.log('Incremented view for', id);
   }
 };

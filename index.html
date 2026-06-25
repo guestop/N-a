@@ -3,44 +3,105 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Universal Web App Marketplace</title>
+  <title>Universal Apps | Run Any App Instantly</title>
   <link rel="stylesheet" href="/assets/css/main.css">
 </head>
 <body>
-  <nav>
-    <a href="/" class="brand">Universal Apps</a>
-    <div class="links">
-      <a href="/browse.html">Browse</a>
-    </div>
-    <div id="auth-section">
-      <!-- Injected by auth.js -->
+
+  <nav class="navbar">
+    <a href="/" class="nav-brand">⚡ Universal Apps</a>
+    <input type="text" class="search-bar" placeholder="Search apps, games, tools...">
+    <div class="nav-right" id="nav-auth">
+      <a href="/browse.html" class="nav-link">Browse</a>
+      <a href="/publish.html" class="nav-link">Publish</a>
+      <button class="btn btn-primary" onclick="Auth.login()">Login</button>
     </div>
   </nav>
 
-  <main class="container">
-    <section style="text-align: center; margin-bottom: 3rem;">
-      <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Run Any App. Instantly.</h1>
-      <p style="color: var(--text-muted); font-size: 1.125rem;">Zero downloads. Zero cost. Directly in your browser.</p>
+  <main class="container fade-in">
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1 class="hero-title">Run Any App. Instantly.</h1>
+      <p class="hero-subtitle">Discover, share and run web apps directly in your browser without downloads.</p>
+      <div class="hero-actions">
+        <a href="/browse.html" class="btn btn-primary" style="padding: 12px 24px; font-size: 16px;">Browse Apps</a>
+        <a href="/publish.html" class="btn btn-ghost" style="padding: 12px 24px; font-size: 16px;">Publish App</a>
+      </div>
+      
+      <!-- Floating previews demo -->
+      <div style="margin-top: 60px; display: flex; justify-content: center; gap: -20px; position: relative; height: 100px;">
+        <!-- Filled by JS optionally, or hardcoded for aesthetics -->
+      </div>
     </section>
 
+    <!-- Featured Apps -->
     <section>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h2>Top Apps</h2>
-        <a href="/browse.html">View all &rarr;</a>
+      <h2 class="section-title">Featured Apps</h2>
+      <div class="horizontal-scroll" id="featured-grid">
+        <!-- Rendered via JS -->
       </div>
-      <div id="featured-apps" class="grid">
-        <div class="loader"></div>
+    </section>
+
+    <!-- Categories Grid -->
+    <section>
+      <h2 class="section-title">Explore Categories</h2>
+      <div class="cat-grid">
+        <a href="/browse.html?category=games" class="cat-tile">🎮 Games</a>
+        <a href="/browse.html?category=ai" class="cat-tile">🤖 AI Tools</a>
+        <a href="/browse.html?category=creative" class="cat-tile">🎨 Creative</a>
+        <a href="/browse.html?category=productivity" class="cat-tile">📊 Productivity</a>
+        <a href="/browse.html?category=music" class="cat-tile">🎵 Music</a>
+        <a href="/browse.html?category=dev" class="cat-tile">🔧 Developer Tools</a>
+        <a href="/browse.html?category=education" class="cat-tile">📚 Education</a>
+        <a href="/browse.html?category=utilities" class="cat-tile">🌐 Utilities</a>
+      </div>
+    </section>
+
+    <!-- Trending Now -->
+    <section>
+      <h2 class="section-title">Trending Now</h2>
+      <div class="card-grid" id="trending-grid">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- New Arrivals -->
+    <section>
+      <h2 class="section-title">New Arrivals</h2>
+      <div class="card-grid" id="new-grid">
+        <!-- Rendered via JS -->
       </div>
     </section>
   </main>
+
+  <footer style="margin-top: 80px; padding: 40px; border-top: 1px solid var(--border); text-align: center; color: var(--text-tertiary); font-size: 14px;">
+    &copy; 2026 Universal Apps. No downloads. No cost.
+  </footer>
 
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/api.js"></script>
   <script src="/assets/js/app.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const apps = await API.fetchApps({ sort: 'most_viewed', limit: 8 });
-      renderGrid('featured-apps', apps);
+      // Fetch initial data
+      const allApps = await API.fetchApps();
+      
+      // If DB is empty, show empty state demos (Rules #7)
+      if (!allApps || allApps.length === 0) {
+        AppRenderer.renderDemos('featured-grid', 6);
+        AppRenderer.renderDemos('trending-grid', 8);
+        AppRenderer.renderDemos('new-grid', 8);
+        return;
+      }
+
+      // Real Data Rendering
+      const featured = [...allApps].sort((a,b) => b.views - a.views).slice(0, 6);
+      const trending = [...allApps].sort((a,b) => b.likes - a.likes).slice(0, 8); // simplified trending
+      const newest = [...allApps].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8);
+
+      AppRenderer.renderGrid('featured-grid', featured);
+      AppRenderer.renderGrid('trending-grid', trending);
+      AppRenderer.renderGrid('new-grid', newest);
     });
   </script>
 </body>
